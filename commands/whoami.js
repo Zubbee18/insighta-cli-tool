@@ -1,7 +1,7 @@
-import { fetchResponse, getCredentials } from "../utilFunctions.js"
+import { fetchResponse, readCredentials } from "../utilFunctions.js"
 
-export function whoami() {
-    const credentials = await getCredentials()
+export async function whoami() {
+    const credentials = await readCredentials()
 
     console.log(credentials.username)
     return

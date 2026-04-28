@@ -1,7 +1,7 @@
-import { fetchResponse, getCredentials } from "../utilFunctions.js"
+import { fetchResponse, readCredentials } from "../utilFunctions.js"
 
 export async function logout() {
-    const credentials = await getCredentials()
+    const credentials = await readCredentials()
     const response = await fetchResponse('POST', '/auth/logout', {refresh_token: credentials.refresh_token})
-    console.log(response.message)
+    if (response) console.log(response.message)
 }
