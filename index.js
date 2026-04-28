@@ -1,11 +1,12 @@
 #! /usr/bin/env node
 
-import { program } from 'commander'
+import { program, Option } from 'commander'
 import chalk from 'chalk'
+
 
 // Define the "insighta login" command
 program
-    .command('login')
+.command('login')
     .description('Login with GitHub')
     .action(login) // function called login
 
@@ -26,9 +27,16 @@ program
 program
     .command('profiles list')
     .description('send GET request to profiles endpoint')
-    .option('--gender <gender>', 'get by gender')
-    .option('--country <country_id>', 'get by country_id')
-    .option('--age-group <age_group>', 'get by age group')
+
+    .addOption(new Option('--gender <gender>', 'get by gender')
+    .choices(['male', 'female']))
+
+    .addOption(new Option('--country <country_id>', 'get by country_id')
+    .argParser(validateCountryId))
+
+    .addOption(new Option('--age-group <age_group>', 'get by age group')
+    .choices(['child', 'teenager', 'adult', 'senior']))
+
     .option('--min-age <min_age>', 'get by min age')
     .option('--max-age <max_age>', 'get by max age')
     .option('--min-gender-probability <min_gender_probability>', 'get by min gender probability')
@@ -38,13 +46,14 @@ program
     .choices(['age', 'created_at', 'gender_probability']))
 
     .addOption(new Option('--order <order>', 'order profiles by')
-    .default(asc, 'ascending')).choices(['desc', 'asc'])
+    .default('asc', 'ascending').choices(['desc', 'asc']))
 
     .addOption(new Option('--page <number>', 'page number')
     .default(1, 'page one'))
 
     .addOption(new Option('--limit <limit>', 'limit values by')
-    .default(10, 'ten values'))
+    .default(10, 'ten values')
+    .argParser(validateLimit))
 
     .action(getProfiles)
 
@@ -74,7 +83,8 @@ program
     .command('profiles export')
     .option('--export', 'specify export format')
     .option('--gender <gender>', 'get by gender')
-    .option('--country <country_id>', 'get by country_id')
+    .addOption(new Option('--country <country_id>', 'get by country_id')
+    .argParser(validateCountryId))
     .option('--age-group <age_group>', 'get by age group')
     .option('--min-age <min_age>', 'get by min age')
     .option('--max-age <max_age>', 'get by max age')
@@ -85,13 +95,14 @@ program
     .choices(['age', 'created_at', 'gender_probability']))
 
     .addOption(new Option('--order <order>', 'order profiles by')
-    .default(asc, 'ascending')).choices(['desc', 'asc'])
+    .default('asc', 'ascending').choices(['desc', 'asc']))
 
     .addOption(new Option('--page <number>', 'page number')
     .default(1, 'page one'))
 
     .addOption(new Option('--limit <limit>', 'limit values by')
-    .default(10, 'ten values'))
+    .default(10, 'ten values')
+    .argParser(validateLimit))
     
     .action(exportProfiles)
 
@@ -100,3 +111,27 @@ program
 program.parse(process.argv)
 
 export const options = program.opts()
+
+
+
+// Validation functions
+    function validateCountryId(value) {
+        if (value && value.length !== 2) {
+            throw new Error('Country ID must be exactly 2 characters')
+        }
+        return value
+    }
+    
+    function validateLimit(value) {
+        const limit = parseInt(value, 10);
+        if (isNaN(limit)) {
+            throw new Error('Limit must be a number')
+        }
+        if (limit > 50) {
+            throw new Error('Limit cannot exceed 50')
+        }
+        if (limit < 10) {
+            throw new Error('Limit must be at least 10')
+        }
+        return limit
+    }
