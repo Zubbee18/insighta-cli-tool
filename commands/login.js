@@ -99,27 +99,29 @@ function startCallbackServer(expectedState, verifier) {
                 try {
                     const tokenObj = await sendCodeForToken(code, verifier)
 
-                    console.log(tokenObj)
                     const access_token = tokenObj.access_token
                     const refresh_token = tokenObj.refresh_token
+                    const username = tokenObj.username
                     
                     // Save tokens in credentials file
-                    await saveToken(refresh_token, access_token)
+                    await saveCredentials(username, refresh_token, access_token)
                     
                     res.writeHead(200, { 'Content-Type': 'text/html' })
                     res.end('<h1>Login successful! You can close this window.</h1>')
                     
-                    console.log('✓ Login successful!')
+                    console.log(`Logged in as @${username}`)
                     
                     // Close server after handling callback
                     server.close()
                     resolve(tokenObj)
+                    process.exit(0)
 
                 } catch (error) {
                     res.writeHead(500)
                     res.end('Error during authentication')
                     server.close()
                     reject(error)
+                    process.exit(1)
                 }
             }
         })
@@ -162,16 +164,16 @@ async function sendCodeForToken(code, verifier) {
     return data
 }
 
-async function saveToken(refresh_token, access_token) {
+async function saveCredentials(username, refresh_token, access_token) {
 
     try {
-
         // create folder
         const folderPath = path.join('.insighta')
         await fs.mkdir(folderPath, { recursive: true })
         const filePath = path.join(folderPath, 'credentials.json')
         
         const credentials = JSON.stringify({
+            username: username,
             access_token: access_token, 
             refresh_token: refresh_token
         }, null, 2)
