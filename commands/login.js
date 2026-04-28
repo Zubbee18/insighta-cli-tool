@@ -98,7 +98,6 @@ function startCallbackServer(expectedState, verifier) {
                 // Exchange code for token
                 try {
                     const tokenObj = await sendCodeForToken(code, verifier)
-                    console.log(tokenObj)
 
                     const access_token = tokenObj.access_token
                     const refresh_token = tokenObj.refresh_token
@@ -122,18 +121,18 @@ function startCallbackServer(expectedState, verifier) {
                     reject(error)
                 }
             }
-        });
+        })
         
         server.listen(3000, () => {
             console.log('Local server started on http://localhost:3000');
-        });
+        })
         
         // Timeout after 5 minutes
         setTimeout(() => {
             server.close();
             reject(new Error('Authentication timeout'));
         }, 5 * 60 * 1000);
-    });
+    })
 }
 
 async function sendCodeForToken(code, verifier) {
@@ -161,14 +160,11 @@ async function saveToken(refresh_token, access_token) {
         const folderPath = path.join('.insighta')
         await fs.mkdir(folderPath, { recursive: true })
         const filePath = path.join(folderPath, 'credentials.json')
-        console.log(filePath)
         
         const credentials = JSON.stringify({
             access_token: access_token, 
             refresh_token: refresh_token
         }, null, 2)
-
-        console.log(credentials)
         
         await fs.writeFile(filePath, credentials)
         console.log("saving token in credentials.json")
