@@ -26,7 +26,7 @@ export async function login() {
     const params = new URLSearchParams({
         client_id: process.env.GITHUB_CLIENT_ID,
         state: state,
-        redirect_uri: 'http://127.0.0.1:3000/auth/github/callback',
+        redirect_uri: 'http://127.0.0.1:4000/auth/github/callback',
         scope: 'user:email',
         code_challenge: challenge,
         code_challenge_method: 'S256'
@@ -81,7 +81,7 @@ function generateChallenge(verifier) {
 function startCallbackServer(expectedState, verifier) {
     return new Promise((resolve, reject) => {
         const server = http.createServer(async (req, res) => {
-            const url = new URL(req.url, 'http://localhost:3000');
+            const url = new URL(req.url, 'http://localhost:4000');
             
             if (url.pathname === '/auth/github/callback') {
                 const code = url.searchParams.get('code')
@@ -99,6 +99,7 @@ function startCallbackServer(expectedState, verifier) {
                 try {
                     const tokenObj = await sendCodeForToken(code, verifier)
 
+                    console.log(tokenObj)
                     const access_token = tokenObj.access_token
                     const refresh_token = tokenObj.refresh_token
                     
@@ -123,8 +124,8 @@ function startCallbackServer(expectedState, verifier) {
             }
         })
         
-        server.listen(3000, () => {
-            console.log('Local server started on http://localhost:3000');
+        server.listen(4000, () => {
+            console.log('Local server started on http://localhost:4000');
         })
         
         // Timeout after 5 minutes
@@ -136,7 +137,10 @@ function startCallbackServer(expectedState, verifier) {
 }
 
 async function sendCodeForToken(code, verifier) {
-    const response = await fetch('https://ubiquitous-chainsaw-production-5f71.up.railway.app/auth/github/cli/callback', {
+    const apiUrl = `${process.env.API_URL}/auth/github/cli/callback`
+    console.log('Sending request to:', apiUrl)
+    
+    const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -147,6 +151,12 @@ async function sendCodeForToken(code, verifier) {
             code_verifier: verifier
         })
     });
+    
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }))
+        console.error('API Error:', errorData)
+        throw new Error(`API request failed: ${errorData.message || response.statusText}`)
+    }
     
     const data = await response.json()
     return data
