@@ -88,15 +88,14 @@ profilesCommand
 // insighta profiles create command
 profilesCommand
     .command('create')
-    .option('--name', 'name to process and store')
-    .argument('<name>', 'name in string')
+    .option('--name <name>', 'name to process and store')
     .action(createProfiles)
 
 // insighta profiles export command
 profilesCommand
     .command('export')
     .description('export profiles data in csv format')
-    .option('--export [format]', 'specify export format')
+    .option('--format [format]', 'specify export format')
     .addOption(new Option('--gender <gender>', 'get by gender')
     .choices(['male', 'female']))
 

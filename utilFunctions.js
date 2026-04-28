@@ -9,8 +9,7 @@ export async function fetchResponse(method='GET', urlPath, body='') {
         method: method,
         headers : {
             'x-api-version' : '1',
-            'Cookie' : `access_token=${credentials.access_token}`,
-            'Accept': 'application/json'
+            'Cookie' : `access_token=${credentials.access_token}`
         }
     }  
     
@@ -22,8 +21,8 @@ export async function fetchResponse(method='GET', urlPath, body='') {
     try {
         const response = await fetch(`${process.env.API_URL}${urlPath}`, option)
     
+        const contentType = response.headers.get('content-type')
         if (!response.ok) {
-            const contentType = response.headers.get('content-type')
             if (contentType && contentType.includes('application/json')) {
                 const responseObj = await response.json()
                 if (responseObj.message === 'Access Token has expired') {
@@ -39,12 +38,31 @@ export async function fetchResponse(method='GET', urlPath, body='') {
                 console.error('Response:', text.substring(0, 200))
                 return
             }
+
             throw new Error(`Request failed with status ${response.status}`)
+            return
         }
-        
+
+        if (contentType && contentType.includes('text/csv')) {
+            const contentDisposition = response.headers.get('content-disposition')
+            let filename = `profiles_${new Date().toISOString().split('T')[0]}.csv` // fallback
+            
+            // Extract filename from Content-Disposition header
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
+                if (filenameMatch) {
+                    filename = filenameMatch[1]
+                }
+            }
+            
+            return {
+                data: await response.text(),
+                filename: filename
+            }
+        }
+
         const data = await response.json()
         return data
-
     
     } catch(err) {
         
@@ -90,20 +108,20 @@ async function refreshCredentials(oldCredentials) {
 
         // ← Add this check
         if (!credentialsResponse.ok) {
-            const text = await credentialsResponse.text()
+            const newCredentialsObj = await credentialsResponse.json()
+    
+            if (newCredentialsObj.status !== 'success') {
+                if (newCredentialsObj.message === 'Refresh Token has expired') {
+                    console.log(`Refresh token has expired. Run 'insighta login' to login again.`)
+                    return
+                }
+                
+                throw new Error('Refresh credentials was not successful')
+            }
+
             throw new Error(`Refresh failed: ${credentialsResponse.status} - ${text.substring(0, 100)}`)
         }
 
-        const newCredentialsObj = await credentialsResponse.json()
-
-        if (newCredentialsObj.status !== 'success') {
-            if (newCredentialsObj.message === 'Refresh Token has expired') {
-                console.log(`Refresh token has expired. Run 'insighta login' to login again.`)
-                return
-            }
-            
-            throw new Error('Refresh credentials was not successful')
-        }
 
         const newCredentials = await writeCredentials(newCredentialsObj)
         return newCredentials
