@@ -28,7 +28,7 @@ export async function fetchResponse(method='GET', urlPath, body='', showSpinner 
     }
     
     try {
-        const response = await fetch(`${process.env.API_URL}${urlPath}`, option)
+        const response = await fetch(`https://ubiquitous-chainsaw-production-5f71.up.railway.app${urlPath}`, option)
     
         const contentType = response.headers.get('content-type')
         if (!response.ok) {
