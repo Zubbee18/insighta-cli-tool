@@ -1,4 +1,4 @@
-import { fetchResponse } from "../utilFunctions.js"
+import { fetchResponse, formatProfileDetails } from "../utilFunctions.js"
 import { logger } from "../logger.js"
 import { createSpinner } from "../spinner.js"
 
@@ -15,9 +15,10 @@ export async function getProfilesById(id) {
         process.exit(1)
     }
 
-    if (response) {
-        logger.info('Profile details:')
-        logger.custom('cyan', JSON.stringify(response, null, 2))
+    if (response && response.data) {
+        formatProfileDetails(response.data)
+    } else if (response) {
+        formatProfileDetails(response)
     } else {
         logger.error('Profile not found')
     }

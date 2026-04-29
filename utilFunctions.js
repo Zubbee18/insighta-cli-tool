@@ -452,3 +452,134 @@ export async function paginateTable(fetchFunction, initialOptions = {}) {
         process.stdin.on('keypress', onKeypress)
     })
 }
+
+/**
+ * Format a single profile object as a vertical field-value table
+ * @param {Object} profile - Profile object to display
+ */
+export function formatProfileDetails(profile) {
+    if (!profile) {
+        console.log(chalk.yellow('No profile data to display'))
+        return
+    }
+
+    // Define field display names and their corresponding data keys
+    const fieldMapping = [
+        { label: 'ID', key: 'id' },
+        { label: 'Username', key: 'username' },
+        { label: 'Email', key: 'email' },
+        { label: 'Role', key: 'role' },
+        { label: 'Name', key: 'name' },
+        { label: 'Age', key: 'age' },
+        { label: 'Gender', key: 'gender' },
+        { label: 'Country', key: 'country_id', formatter: (value) => value ? formatCountry(value) : value },
+        { label: 'Age Group', key: 'age_group' },
+        { label: 'Created At', key: 'created_at' },
+        { label: 'Updated At', key: 'updated_at' }
+    ]
+
+    // Filter out fields that don't exist in the profile
+    const fields = fieldMapping.filter(field => profile.hasOwnProperty(field.key))
+
+    // Calculate column widths
+    const labelWidth = Math.max(...fields.map(f => f.label.length)) + 2
+    const valueWidth = 40
+
+    // Box drawing characters
+    const border = {
+        topLeft: '┌',
+        topRight: '┐',
+        bottomLeft: '└',
+        bottomRight: '┘',
+        horizontal: '─',
+        vertical: '│',
+        leftJoin: '├',
+        rightJoin: '┤'
+    }
+
+    // Helper to pad text
+    const pad = (text, width) => {
+        const str = String(text ?? '')
+        return str + ' '.repeat(Math.max(0, width - str.length))
+    }
+
+    // Print top border
+    const topBorder = border.topLeft + 
+        border.horizontal.repeat(labelWidth) + 
+        border.leftJoin +
+        border.horizontal.repeat(valueWidth) + 
+        border.topRight
+    console.log(chalk.gray(topBorder))
+
+    // Print header row
+    const headerRow = border.vertical + 
+        chalk.cyan.bold(pad('Field', labelWidth)) + 
+        chalk.gray(border.vertical) +
+        chalk.green.bold(pad('Value', valueWidth)) + 
+        chalk.gray(border.vertical)
+    console.log(headerRow)
+
+    // Print header separator
+    const headerSeparator = border.leftJoin + 
+        border.horizontal.repeat(labelWidth) + 
+        border.leftJoin +
+        border.horizontal.repeat(valueWidth) + 
+        border.rightJoin
+    console.log(chalk.gray(headerSeparator))
+
+    // Print each field-value pair
+    fields.forEach((field) => {
+        let value = profile[field.key]
+        
+        // Apply formatter if available
+        if (field.formatter) {
+            value = field.formatter(value)
+        }
+        
+        const row = border.vertical + 
+            chalk.cyan(pad(field.label, labelWidth)) + 
+            chalk.gray(border.vertical) +
+            chalk.white(pad(value, valueWidth)) + 
+            chalk.gray(border.vertical)
+        console.log(row)
+    })
+
+    // Print bottom border
+    const bottomBorder = border.bottomLeft + 
+        border.horizontal.repeat(labelWidth) + 
+        border.rightJoin +
+        border.horizontal.repeat(valueWidth) + 
+        border.bottomRight
+    console.log(chalk.gray(bottomBorder))
+    console.log() // Empty line
+}
+
+/**
+ * Format country code with full name if available
+ * @param {String} countryCode - ISO 3166-1 alpha-2 country code
+ * @returns {String} Formatted country string
+ */
+function formatCountry(countryCode) {
+    // Map of common country codes to names
+    const countryNames = {
+        'NG': 'Nigeria',
+        'US': 'United States',
+        'GB': 'United Kingdom',
+        'EG': 'Egypt',
+        'GH': 'Ghana',
+        'KE': 'Kenya',
+        'ZA': 'South Africa',
+        'CA': 'Canada',
+        'DE': 'Germany',
+        'FR': 'France',
+        'IN': 'India',
+        'CN': 'China',
+        'JP': 'Japan',
+        'BR': 'Brazil',
+        'MX': 'Mexico',
+        'AU': 'Australia'
+    }
+
+    const name = countryNames[countryCode]
+    return name ? `${name} (${countryCode})` : countryCode
+}

@@ -1,4 +1,4 @@
-import { fetchResponse, readCredentials, formatTable } from "../utilFunctions.js"
+import { fetchResponse, readCredentials, formatProfileDetails } from "../utilFunctions.js"
 import { logger } from "../logger.js"
 import { createSpinner } from "../spinner.js"
 
@@ -22,10 +22,12 @@ export async function createProfiles(options) {
         return
     }
 
+    logger.success('Profile created successfully!')
+    console.log() // Empty line
+    
     if (response.data) {
-        logger.success('Profile created successfully!')
-        formatTable(response.data)
+        formatProfileDetails(response.data)
     } else {
-        formatTable(response)
+        formatProfileDetails(response)
     }
 }
