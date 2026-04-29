@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import os from "node:os";
 import readline from "node:readline";
 import chalk from "chalk";
 import { logger } from "./logger.js";
@@ -110,16 +111,23 @@ export async function fetchResponse(
 }
 
 export async function readCredentials() {
-  const filePath = path.join("./.insighta", "credentials.json");
-  const content = await fs.readFile(filePath, { encoding: "utf-8" });
-  const credentials = JSON.parse(content);
+  const folderPath = path.join(os.homedir(), ".insighta");
+  const filePath = path.join(folderPath, "credentials.json");
 
-  return credentials; // object
+  try {
+    await fs.access(filePath);
+  } catch {
+    logger.error("No credentials found. Run 'insighta login' to log in.");
+    process.exit(1);
+  }
+
+  const content = await fs.readFile(filePath, { encoding: "utf-8" });
+  return JSON.parse(content);
 }
 
 async function writeCredentials(newCredentials) {
   const oldCredentials = await readCredentials();
-  const filePath = path.join("./.insighta", "credentials.json");
+  const filePath = path.join(os.homedir(), ".insighta", "credentials.json");
   const credentials = {
     username: oldCredentials.username,
     access_token: newCredentials.access_token,

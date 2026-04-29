@@ -5,6 +5,7 @@ import { URLSearchParams } from "node:url";
 import http from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
+import os from "node:os";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { logger } from "../logger.js";
@@ -180,7 +181,7 @@ async function sendCodeForToken(code, verifier) {
 async function saveCredentials(username, refresh_token, access_token) {
   try {
     // create folder
-    const folderPath = path.join(".insighta");
+    const folderPath = path.join(os.homedir(), ".insighta");
     await fs.mkdir(folderPath, { recursive: true });
     const filePath = path.join(folderPath, "credentials.json");
 
