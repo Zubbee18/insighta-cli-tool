@@ -26,7 +26,7 @@ export async function login() {
 
     // constructor parameters for github request
     const params = new URLSearchParams({
-        client_id: process.env.GITHUB_CLIENT_ID,
+        client_id: 'Iv23licqBMMaYxesoVki',
         state: state,
         redirect_uri: 'http://127.0.0.1:4000/auth/github/callback',
         scope: 'user:email',
