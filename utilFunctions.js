@@ -107,8 +107,8 @@ async function refreshCredentials(oldCredentials) {
         })
 
         // ← Add this check
+        const newCredentialsObj = await credentialsResponse.json()
         if (!credentialsResponse.ok) {
-            const newCredentialsObj = await credentialsResponse.json()
     
             if (newCredentialsObj.status !== 'success') {
                 if (newCredentialsObj.message === 'Refresh Token has expired') {
@@ -116,7 +116,7 @@ async function refreshCredentials(oldCredentials) {
                     return
                 }
                 
-                throw new Error('Refresh credentials was not successful')
+                console.log(credentialsResponse.status)
             }
 
             throw new Error(`Refresh failed: ${credentialsResponse.status} - ${text.substring(0, 100)}`)
