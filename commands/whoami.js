@@ -1,8 +1,9 @@
 import { fetchResponse, readCredentials } from "../utilFunctions.js"
+import { logger } from "../logger.js"
 
 export async function whoami() {
     const credentials = await readCredentials()
 
-    console.log(credentials.username)
+    logger.highlight(`@${credentials.username}`)
     return
 }

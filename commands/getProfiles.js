@@ -1,4 +1,4 @@
-import { fetchResponse, readCredentials } from "../utilFunctions.js"
+import { fetchResponse, readCredentials, formatTable, paginateTable } from "../utilFunctions.js"
 
 export async function getProfiles(options) {
 	// get the queries
@@ -17,13 +17,15 @@ export async function getProfiles(options) {
 	if (minCountryProbability) paramsObj.min_country_probability = minCountryProbability
 	if (sortBy) paramsObj.sort_by = sortBy
 	if (order) paramsObj.order = order
-	if (page) paramsObj.page = page
 	if (limit) paramsObj.limit = limit
 
-	const params = new URLSearchParams(paramsObj)
+	// Fetch function for pagination
+	const fetchPage = async (opts) => {
+		const pageParams = { ...paramsObj, page: opts.page }
+		const params = new URLSearchParams(pageParams)
+		return await fetchResponse('GET', `/api/profiles?${params}`)
+	}
 
-	const response = await fetchResponse('GET', `/api/profiles?${params}`)
-
-	if (response) console.log(response)
-	return
+	// Use pagination
+	await paginateTable(fetchPage, { page: page || 1 })
 }

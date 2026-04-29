@@ -6,6 +6,8 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { logger } from '../logger.js'
+import { createSpinner } from '../spinner.js'
 
 dotenv.config()
 
@@ -35,7 +37,7 @@ export async function login() {
     const authUrl = `https://github.com/login/oauth/authorize?${params.toString()}`
 
     // sends the user to github with parameters
-    console.log('Opening browser for GitHub authorization...')
+    logger.info('Opening browser for GitHub authorization...')
     
     try {
         // For Windows (including Git Bash), use the start command
@@ -45,21 +47,21 @@ export async function login() {
         } else {
             await open(authUrl)
         }
-        console.log('Browser opened successfully!')
+        logger.success('Browser opened successfully!')
     } catch (error) {
-        console.log('\n⚠️  Could not open browser automatically.')
-        console.log('Please copy and paste this URL into your browser:')
-        console.log(`\n${authUrl}\n`)
+        logger.warning('Could not open browser automatically.')
+        logger.info('Please copy and paste this URL into your browser:')
+        logger.highlight(`\n${authUrl}\n`)
     }
 
-    console.log('Waiting for GitHub authorization...')
+    logger.info('Waiting for GitHub authorization...')
     
     // Now wait for the callback
     try {
         await serverPromise
 
     } catch (error) {
-        console.error('Authentication failed:', error.message)
+        logger.error('Authentication failed:', error.message)
         process.exit(1)
     }
 }
@@ -97,19 +99,24 @@ function startCallbackServer(expectedState, verifier) {
                 
                 // Exchange code for token
                 try {
+                    const spinner = createSpinner('Authenticating with GitHub...')
+                    spinner.start()
+                    
                     const tokenObj = await sendCodeForToken(code, verifier)
 
                     const access_token = tokenObj.access_token
                     const refresh_token = tokenObj.refresh_token
                     const username = tokenObj.username
                     
+                    spinner.update('Saving credentials...')
+                    
                     // Save tokens in credentials file
                     await saveCredentials(username, refresh_token, access_token)
                     
+                    spinner.succeed(`Logged in as @${username}`)
+                    
                     res.writeHead(200, { 'Content-Type': 'text/html' })
                     res.end('<h1>Login successful! You can close this window.</h1>')
-                    
-                    console.log(`Logged in as @${username}`)
                     
                     // Close server after handling callback
                     server.close()
@@ -127,7 +134,7 @@ function startCallbackServer(expectedState, verifier) {
         })
         
         server.listen(4000, () => {
-            console.log('Local server started on http://localhost:4000');
+            logger.debug('Local server started on http://localhost:4000');
         })
         
         // Timeout after 5 minutes
@@ -140,7 +147,6 @@ function startCallbackServer(expectedState, verifier) {
 
 async function sendCodeForToken(code, verifier) {
     const apiUrl = `${process.env.API_URL}/auth/github/cli/callback`
-    console.log('Sending request to:', apiUrl)
     
     const response = await fetch(apiUrl, {
         method: 'POST',
@@ -156,7 +162,7 @@ async function sendCodeForToken(code, verifier) {
     
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }))
-        console.error('API Error:', errorData)
+        logger.error('API Error:', JSON.stringify(errorData, null, 2))
         throw new Error(`API request failed: ${errorData.message || response.statusText}`)
     }
     
@@ -179,10 +185,9 @@ async function saveCredentials(username, refresh_token, access_token) {
         }, null, 2)
         
         await fs.writeFile(filePath, credentials)
-        console.log("saving token in credentials.json")
-
+        logger.debug("Saving token in credentials.json")
     } catch(err) {
-        console.error('Error saving credentials:', err)
+        logger.error('Error saving credentials:', err.message)
         throw err
     }
 

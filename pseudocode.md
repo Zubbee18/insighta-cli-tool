@@ -1,18 +1,5 @@
 
-To-do in api 
-1. in pagination, if there's no next page, next page is null too
-2. in pagination, include total pages
-3. remove check if it's cli sending in json (might be useful for web tho)
-4. under sort_by for all the functions, send a res immediately when sort_by is not correct
 
-CLI
-2. create functions for those commands
-
-Logout
-1. pass in refresh token in the body, then 
-- access token is gotten from your cookie and invalidated
-- refresh token is also added to blacklist
-- is_active is changed to false
 
 
 

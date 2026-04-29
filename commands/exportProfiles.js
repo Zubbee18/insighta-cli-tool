@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { fetchResponse, readCredentials } from "../utilFunctions.js"
+import { logger } from "../logger.js"
+import { createSpinner } from "../spinner.js"
 
 export async function exportProfiles(options) {
 
@@ -28,22 +30,32 @@ export async function exportProfiles(options) {
 
     const response = await fetchResponse('GET', `/api/profiles/export?${params}`)
 
+    if (!response) {
+        // Authentication or fetch failed
+        logger.error('Export failed. Please try again.')
+        process.exit(1)
+    }
+
     if (response) {
         // If format is CSV and we got the CSV data, save it to a file
         if (format && format.toLowerCase() === 'csv' && response.filename) {
             // Generate filename with timestamp
             const filePath = resolve(process.cwd(), response.filename)
             
+            const spinner = createSpinner('Writing CSV file...')
+            spinner.start()
+            
             try {
                 // Write CSV to file in current working directory
                 await fs.writeFile(filePath, response.data, 'utf8')
-                console.log(`✓ CSV file saved successfully to: ${filePath}`)
+                spinner.succeed(`CSV file saved successfully to: ${filePath}`)
 
             } catch (err) {
-                console.error(`Error saving CSV file: ${err.message}`)
+                spinner.fail(`Error saving CSV file: ${err.message}`)
             }
         } else {
-            console.log('Profile data is in JSON format, use --format csv to export as csv file', response)
+            logger.info('Profile data is in JSON format, use --format csv to export as csv file')
+            logger.debug(JSON.stringify(response, null, 2))
         }
     }
     return
