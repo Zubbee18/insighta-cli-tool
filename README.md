@@ -4,7 +4,7 @@ Command-line interface for Insighta profile management system with GitHub OAuth 
 
 ## Production Links
 
-**API:** https://ubiquitous-chainsaw-production-5f71.up.railway.app/  
+**API:** https://ubiquitous-chainsaw-production-5f71.up.railway.app  
 **Web Portal:** https://insighta-web-portal-production.up.railway.app
 
 ## Table of Contents
