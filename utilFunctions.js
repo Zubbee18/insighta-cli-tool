@@ -45,12 +45,7 @@ export async function fetchResponse(
           try {
             await refreshCredentials(credentials);
             if (spinner) spinner.stop();
-            return await fetchResponse(
-              method,
-              `${API_URL}${urlPath}`,
-              body,
-              false,
-            ); // Don't show spinner on retry
+            return await fetchResponse(method, urlPath, body, false); // Don't show spinner on retry
           } catch (refreshErr) {
             if (spinner) spinner.stop();
             if (refreshErr.message === "REFRESH_TOKEN_EXPIRED") {
