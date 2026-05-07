@@ -17,12 +17,12 @@ export async function fetchResponse(
   const spinner = showSpinner ? createSpinner("Fetching data...") : null;
   if (spinner) spinner.start();
 
-  const API_URL = "https://ubiquitous-chainsaw-production-5f71.up.railway.app";
+  const API_URL = process.env.API_URL;
 
   let option = {
     method: method,
     headers: {
-      "x-api-version": "1",
+      "x-api-version": process.env.API_VERSION,
       Cookie: `access_token=${credentials.access_token}`,
     },
   };
@@ -106,7 +106,7 @@ export async function fetchResponse(
 }
 
 export async function readCredentials() {
-  const folderPath = path.join(os.homedir(), ".insighta");
+  const folderPath = path.join(os.homedir(), process.env.CREDENTIALS_FOLDER);
   const filePath = path.join(folderPath, "credentials.json");
 
   try {
@@ -122,7 +122,11 @@ export async function readCredentials() {
 
 async function writeCredentials(newCredentials) {
   const oldCredentials = await readCredentials();
-  const filePath = path.join(os.homedir(), ".insighta", "credentials.json");
+  const filePath = path.join(
+    os.homedir(),
+    process.env.CREDENTIALS_FOLDER,
+    "credentials.json",
+  );
   const credentials = {
     username: oldCredentials.username,
     access_token: newCredentials.access_token,
@@ -138,11 +142,11 @@ async function writeCredentials(newCredentials) {
 
 async function refreshCredentials(oldCredentials) {
   const credentialsResponse = await fetch(
-    `https://ubiquitous-chainsaw-production-5f71.up.railway.app/auth/refresh`,
+    `${process.env.API_URL}/auth/refresh`,
     {
       method: "POST",
       headers: {
-        "x-api-version": "1",
+        "x-api-version": process.env.API_VERSION,
         Cookie: `access_token=${oldCredentials.access_token}`,
         "Content-Type": "application/json",
       },

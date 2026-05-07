@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import dotenv from "dotenv";
 import open from "open";
 import { URLSearchParams } from "node:url";
 import http from "node:http";
@@ -10,8 +9,6 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import { logger } from "../logger.js";
 import { createSpinner } from "../spinner.js";
-
-dotenv.config();
 
 const execAsync = promisify(exec);
 
@@ -28,9 +25,9 @@ export async function login() {
 
   // constructor parameters for github request
   const params = new URLSearchParams({
-    client_id: "Iv23licqBMMaYxesoVki",
+    client_id: process.env.GITHUB_CLIENT_ID,
     state: state,
-    redirect_uri: "http://127.0.0.1:4000/auth/github/callback",
+    redirect_uri: `http://127.0.0.1:${process.env.CALLBACK_PORT}/auth/github/callback`,
     scope: "user:email",
     code_challenge: challenge,
     code_challenge_method: "S256",
@@ -85,7 +82,10 @@ function generateChallenge(verifier) {
 function startCallbackServer(expectedState, verifier) {
   return new Promise((resolve, reject) => {
     const server = http.createServer(async (req, res) => {
-      const url = new URL(req.url, "http://localhost:4000");
+      const url = new URL(
+        req.url,
+        `http://localhost:${process.env.CALLBACK_PORT}`,
+      );
 
       if (url.pathname === "/auth/github/callback") {
         const code = url.searchParams.get("code");
@@ -134,8 +134,10 @@ function startCallbackServer(expectedState, verifier) {
       }
     });
 
-    server.listen(4000, () => {
-      logger.debug("Local server started on http://localhost:4000");
+    server.listen(parseInt(process.env.CALLBACK_PORT, 10), () => {
+      logger.debug(
+        `Local server started on http://localhost:${process.env.CALLBACK_PORT}`,
+      );
     });
 
     // Timeout after 5 minutes
@@ -150,7 +152,7 @@ function startCallbackServer(expectedState, verifier) {
 }
 
 async function sendCodeForToken(code, verifier) {
-  const apiUrl = `https://ubiquitous-chainsaw-production-5f71.up.railway.app/auth/github/cli/callback`;
+  const apiUrl = `${process.env.API_URL}/auth/github/cli/callback`;
 
   const response = await fetch(apiUrl, {
     method: "POST",
@@ -181,7 +183,7 @@ async function sendCodeForToken(code, verifier) {
 async function saveCredentials(username, refresh_token, access_token) {
   try {
     // create folder
-    const folderPath = path.join(os.homedir(), ".insighta");
+    const folderPath = path.join(os.homedir(), process.env.CREDENTIALS_FOLDER);
     await fs.mkdir(folderPath, { recursive: true });
     const filePath = path.join(folderPath, "credentials.json");
 
