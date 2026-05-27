@@ -4,8 +4,7 @@ Command-line interface for Insighta profile management system with GitHub OAuth 
 
 ## Production Links
 
-**API:** https://ubiquitous-chainsaw-production-5f71.up.railway.app  
-**Web Portal:** https://insighta-web-portal-production.up.railway.app
+**Web Portal:** [https://insighta-web-portal.up.railway.app](https://insighta-web-portal.up.railway.app/)
 
 ## Table of Contents
 
@@ -21,13 +20,13 @@ Command-line interface for Insighta profile management system with GitHub OAuth 
 
 ## Features
 
-✅ GitHub OAuth with PKCE  
-✅ Automatic token refresh  
-✅ Local credential storage (`~/.insighta/credentials.json`)  
-✅ Beautiful tables & spinners  
-✅ Natural language search  
-✅ CSV export  
-✅ Comprehensive filtering
+1. GitHub OAuth with PKCE  
+2. Automatic token refresh  
+3. Local credential storage (`~/.insighta/credentials.json`)  
+4. Beautiful tables & spinners  
+5. Natural language search  
+6. CSV export  
+7. Comprehensive filtering
 
 ## System Architecture
 
