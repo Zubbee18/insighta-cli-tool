@@ -2,10 +2,6 @@
 
 Command-line interface for Insighta profile management system with GitHub OAuth authentication, automatic token refresh, and natural language search.
 
-## Production Links
-
-**Web Portal:** [https://insighta-web-portal.up.railway.app](https://insighta-web-portal.up.railway.app/)
-
 ## Table of Contents
 
 - [Features](#features)
